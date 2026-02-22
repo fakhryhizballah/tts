@@ -5,13 +5,18 @@ const path = require('path');
 const fs = require('fs');
 const dotenv = require('dotenv');
 
+
 dotenv.config();
 const BASE_URL = process.env.BASE_URL;
 
 const app = express();
 app.use(express.json());
 app.use(express.static('public'));
-
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
 const MODEL_PATH = path.join(__dirname, './models/');
 const TMP_DIR = path.join(__dirname, './tmp/');
 
@@ -90,7 +95,7 @@ app.post('/generate-tts', async (req, res) => {
         await generateWav(text, outputPath, enginModel);
       return  res.json({
             status: 'File generated',
-            path: `/api/voice/'${fileName}`,
+          path: `/api/voice/${fileName}`,
                   url: `${BASE_URL}/api/voice/${fileName}`
          });
     } catch (err) {

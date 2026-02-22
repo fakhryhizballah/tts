@@ -24,7 +24,7 @@ COPY package*.json ./
 RUN npm ci
 
 # Copy application code
-COPY models/ ./models/
+# COPY models/ ./models/
 COPY server.js .
 
 # Expose port 3000
