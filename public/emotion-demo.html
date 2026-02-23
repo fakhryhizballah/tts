@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion TTS Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section h2 {
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        textarea, select, input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus, select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .emotion-badges {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .emotion-badge {
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .emotion-badge:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .emotion-badge.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .result-box {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+        }
+
+        .result-item {
+            margin-bottom: 10px;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .result-value {
+            color: #333;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .error {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 6px;
+            color: #856404;
+            display: none;
+            margin-top: 15px;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .emotion-info {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 Emotion TTS Demo</h1>
+        <p class="subtitle">Buat audio dengan tone yang sesuai emosi teks</p>
+
+        <!-- Section 1: Auto Emotion Detection -->
+        <div class="section">
+            <h2>🚀 Auto Emotion Detection</h2>
+            <div class="form-group">
+                <label for="autoText">Masukkan Text (auto emotion):</label>
+                <textarea id="autoText" placeholder="Contoh: Saya sangat senang hari ini!"></textarea>
+            </div>
+            <button class="btn-primary" onclick="generateAuto()">Generate dengan Emotion Otomatis</button>
+            <div class="loading" id="autoLoading">⏳ Generating audio...</div>
+            <div class="error" id="autoError"></div>
+            <div class="result-box" id="autoResult"></div>
+        </div>
+
+        <!-- Section 2: Force Emotion -->
+        <div class="section">
+            <h2>🎯 Force Emotion</h2>
+            <div class="form-group">
+                <label for="forceText">Text:</label>
+                <textarea id="forceText" placeholder="Masukkan text apapun..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Pilih Emotion:</label>
+                <div class="emotion-badges" id="emotionBadges"></div>
+            </div>
+            <button class="btn-primary" onclick="generateForce()">Generate dengan Emotion Dipilih</button>
+            <div class="loading" id="forceLoading">⏳ Generating audio...</div>
+            <div class="error" id="forceError"></div>
+            <div class="result-box" id="forceResult"></div>
+        </div>
+
+        <!-- Section 3: Test Examples -->
+        <div class="section">
+            <h2>📝 Test Examples</h2>
+            <div id="testExamples"></div>
+            <div class="loading" id="examplesLoading">⏳ Loading examples...</div>
+        </div>
+
+        <!-- Section 4: Emotion Info -->
+        <div class="section">
+            <h2>ℹ️ Available Emotions</h2>
+            <div id="emotionsList"></div>
+            <div class="loading" id="emotionsLoading">⏳ Loading emotions...</div>
+        </div>
+    </div>
+
+    <script src="emotion-tts-client.js"></script>
+    <script>
+        const client = new EmotionTTSClient('http://localhost:3000');
+        let selectedEmotion = 'happy';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEmotions();
+            loadTestExamples();
+        });
+
+        async function loadEmotions() {
+            const emotionsLoading = document.getElementById('emotionsLoading');
+            const emotionsList = document.getElementById('emotionsList');
+            const emotionBadges = document.getElementById('emotionBadges');
+
+            const data = await client.getEmotions();
+            if (!data) return;
+
+            emotionsLoading.style.display = 'none';
+
+            // Create badges
+            emotionBadges.innerHTML = '';
+            data.available_emotions.forEach(emotion => {
+                const badge = document.createElement('div');
+                badge.className = 'emotion-badge' + (emotion.emotion === 'happy' ? ' active' : '');
+                badge.textContent = emotion.emotion.toUpperCase();
+                badge.onclick = () => selectEmotion(emotion.emotion, data.available_emotions);
+                emotionBadges.appendChild(badge);
+            });
+
+            // Create info display
+            emotionsList.innerHTML = '';
+            data.available_emotions.forEach(emotion => {
+                const div = document.createElement('div');
+                div.className = 'emotion-info';
+                div.innerHTML = `
+                    <strong>${emotion.emotion.toUpperCase()}</strong> - ${emotion.description}<br>
+                    <small>Speed: ${emotion.speed}x | Model: ${emotion.model}</small><br>
+                    <small>Keywords: ${(emotion.keywords || []).join(', ') || 'N/A'}</small>
+                `;
+                emotionsList.appendChild(div);
+            });
+        }
+
+        async function loadTestExamples() {
+            const examplesLoading = document.getElementById('examplesLoading');
+            const testExamples = document.getElementById('testExamples');
+
+            const data = await client.getTestExamples();
+            if (!data) return;
+
+            examplesLoading.style.display = 'none';
+            testExamples.innerHTML = '';
+
+            for (const [emotion, text] of Object.entries(data.test_examples)) {
+                const div = document.createElement('div');
+                div.className = 'emotion-info';
+                div.innerHTML = `
+                    <strong>${emotion.toUpperCase()}:</strong> "${text}"<br>
+                    <button class="btn-secondary" style="margin-top: 5px; padding: 6px 12px; font-size: 12px;" onclick="useExample('${text}', '${emotion}')">Use Example</button>
+                `;
+                testExamples.appendChild(div);
+            }
+        }
+
+        function selectEmotion(emotion, emotions) {
+            selectedEmotion = emotion;
+            
+            // Update badges
+            document.querySelectorAll('.emotion-badge').forEach(badge => {
+                badge.classList.remove('active');
+                if (badge.textContent.toLowerCase() === emotion.toLowerCase()) {
+                    badge.classList.add('active');
+                }
+            });
+        }
+
+        async function generateAuto() {
+            const text = document.getElementById('autoText').value.trim();
+            if (!text) {
+                showError('autoError', 'Please enter text');
+                return;
+            }
+
+            await generateAndDisplay(text, {}, 'autoLoading', 'autoError', 'autoResult');
+        }
+
+        async function generateForce() {
+            const text = document.getElementById('forceText').value.trim();
+            if (!text) {
+                showError('forceError', 'Please enter text');
+                return;
+            }
+
+            await generateAndDisplay(text, { forceEmotion: selectedEmotion }, 'forceLoading', 'forceError', 'forceResult');
+        }
+
+        function useExample(text, emotion) {
+            document.getElementById('forceText').value = text;
+            selectEmotion(emotion, []);
+        }
+
+        async function generateAndDisplay(text, options, loadingId, errorId, resultId) {
+            const loading = document.getElementById(loadingId);
+            const error = document.getElementById(errorId);
+            const result = document.getElementById(resultId);
+
+            loading.classList.add('show');
+            error.classList.remove('show');
+            result.classList.remove('show');
+
+            const data = await client.generateTTS(text, options);
+
+            loading.classList.remove('show');
+
+            if (!data) {
+                showError(errorId, 'Failed to generate audio');
+                return;
+            }
+
+            error.classList.remove('show');
+            result.classList.add('show');
+
+            result.innerHTML = `
+                <div class="result-item">
+                    <div class="result-label">Detected Emotion</div>
+                    <div class="result-value">🎭 ${data.emotion.toUpperCase()} - ${data.description}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Audio Speed</div>
+                    <div class="result-value">⚡ ${data.speed}x speed</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Audio Player</div>
+                    <audio controls>
+                        <source src="${data.url}" type="audio/wav">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Audio URL</div>
+                    <div class="result-value"><a href="${data.url}" target="_blank">${data.url}</a></div>
+                </div>
+            `;
+        }
+
+        function showError(elementId, message) {
+            const error = document.getElementById(elementId);
+            error.textContent = '❌ ' + message;
+            error.classList.add('show');
+        }
+    </script>
+</body>
+</html>
