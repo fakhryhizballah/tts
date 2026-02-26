@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     build-essential \
     espeak-ng \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip and install build tools
@@ -14,6 +15,8 @@ RUN python3 -m pip install --upgrade pip setuptools wheel
 
 # Install Piper TTS dengan semua dependencies
 RUN python3 -m pip install --no-cache-dir piper-tts pathvalidate
+# RUN python3 -m pip install piper-tts pathvalidate
+
 
 WORKDIR /app
 
